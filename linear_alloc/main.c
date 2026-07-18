@@ -46,7 +46,7 @@ int main(){
     printf("%p\n",ptr);
     ptr=arena_alloc(&arena,500);
     printf("%p\n",ptr);
-    
+
     ptr=arena_realloc(&arena,ptr,500,600);
     printf("%p\n",ptr);
     ptr=arena_realloc(&arena,ptr,600,100);
@@ -61,7 +61,7 @@ int main(){
     print(name,number,data);
 
     tmp_arena_t tmp;
-    tmp_arena_capture(&arena,&tmp);
+    tmp_arena_capture(&tmp,&arena);
     arena_free_all(&arena);
     tmp_arena_restore(&tmp);
 
