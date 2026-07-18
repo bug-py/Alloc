@@ -10,5 +10,5 @@ typedef struct{
 }arena_t;
 
 void arena_init(arena_t* arena,void* buffer,size_t length);
-int arena_alloc(arena_t* arena,size_t size);
+void* arena_alloc(arena_t* arena,size_t size);
 #endif

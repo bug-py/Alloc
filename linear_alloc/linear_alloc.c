@@ -11,7 +11,18 @@ void arena_init(arena_t* arena,void* buffer,size_t length){
     arena->current_offset=0;
     arena->prev_offset=0;
 }
-int arena_alloc(arena_t* arena,size_t size){
-    void* align_ptr=align_ptr_foward((arena->buffer+arena->current_offset),DEFAULT_ALIGNEMENT);
-    return -1;
+void* arena_alloc(arena_t* arena,size_t size){
+    if(arena==NULL || size==0) return NULL;
+
+    void* ptr=arena->buffer+arena->current_offset;
+    void* align_ptr=align_ptr_foward(ptr,DEFAULT_ALIGNEMENT);
+
+    size_t new_offset=arena->current_offset+size+((uintptr_t)align_ptr-(uintptr_t)ptr);
+
+    if(new_offset>arena->length) return NULL;
+
+    arena->prev_offset=arena->current_offset;
+    arena->current_offset=new_offset;
+
+    return align_ptr;
 }
