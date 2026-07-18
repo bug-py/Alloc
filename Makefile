@@ -4,6 +4,8 @@ METHOD_ALLOC =linear_alloc
 BINS := $(foreach m,$(METHOD_ALLOC),bin/$(m).exe)
 
 define RULES
+$(1) : bin/$(1).exe
+	bin/$(1).exe
 
 obj/main_$(1).o : $(1)/main.c $(1)/$(1).h
 	$(CC) $(CFLAGS) -I$(1) -c $$< -o $$@
@@ -18,7 +20,7 @@ endef
 
 $(foreach m,$(METHOD_ALLOC),$(eval $(call RULES,$(m))))
 
-.PHONY : all clean
+.PHONY : all clean $(METHOD_ALLOC)
 
 all : $(BINS)
 
