@@ -25,9 +25,9 @@ void* stack_alloc(stack_t* stack,size_t size){
     size_t padding=(uintptr_t)header-(uintptr_t)ptr;
     header->padding=(uint8_t)padding;
     header->prev_offset=stack->prev_offset;
-    
+
     stack->prev_offset=(uintptr_t)stack->buffer-(uintptr_t)new_ptr;
     stack->current_offset=new_offset;
-    printf("%p\n",new_ptr);
+    
     return new_ptr;
 }
