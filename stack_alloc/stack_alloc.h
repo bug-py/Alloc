@@ -11,8 +11,10 @@ typedef struct{
 
 typedef struct{
     uint8_t padding;
+    size_t alloc_size;
     size_t prev_offset;
 }header_t;
 void stack_init(stack_t* stack,void* buffer,size_t length);
 void* stack_alloc(stack_t* stack,size_t size);
+int stack_free(stack_t* stack,void* old_ptr);
 #endif
