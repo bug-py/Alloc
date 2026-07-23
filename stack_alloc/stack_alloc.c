@@ -2,16 +2,26 @@
 #include <string.h>
 #define DEFAULT_ALIGNEMENT 2*sizeof(void*)
 
-static void* align_ptr_foward(void* ptr,size_t size){
-    return (char*)ptr+size-((uintptr_t)ptr%size);
+static void* align_ptr_foward(void* ptr,size_t align){
+    size_t modulo=(uintptr_t)ptr%align;
+    if(modulo!=0){
+        return ((char*)ptr)+align-modulo; 
+    }
+    return ptr;
 }
-
+static size_t align_size_foward(size_t size,size_t align){
+    size_t modulo=size%align;
+    if(modulo!=0){
+        return size+align-modulo;
+    }
+    return size; 
+}
 static size_t calc_padding_with_header(void* ptr,size_t size){
     size_t padding=(uintptr_t)align_ptr_foward(ptr,size)-(uintptr_t)ptr;
     size_t needed_space=sizeof(header_t);
     if(needed_space>padding){
         size_t remaining_space=needed_space-padding;
-        padding+=remaining_space+size-(remaining_space%size);
+        padding+=align_size_foward(remaining_space,size);
     } 
     return padding;
 
@@ -62,4 +72,8 @@ int stack_free(stack_t* stack,void* old_ptr){
     stack->last_alloc_offset=header.prev_alloc_offset;
     return 0;
 
+}
+void stack_free_all(stack_t* stack){
+    stack->current_offset=0;
+    stack->last_alloc_offset=0;
 }

@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wextra -Wall 
-METHOD_ALLOC =linear_alloc stack_alloc
+METHOD_ALLOC =linear_alloc stack_alloc pool_alloc
 BINS := $(foreach m,$(METHOD_ALLOC),bin/$(m).exe)
 
 define RULES

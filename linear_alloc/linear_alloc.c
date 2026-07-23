@@ -3,8 +3,12 @@
 #define DEFAULT_ALIGNEMENT 2*sizeof(void*) // un alignement de 16 bit n'est pas toujours requis c'est une convention
 
 
-static void* align_ptr_foward(void* ptr,size_t size){
-    return ((char*)ptr)+(size)-((uintptr_t)ptr % size); // j'ajoute au ptr le nombre d'octet pour atteindre la prochaine valeur alignée
+static void* align_ptr_foward(void* ptr,size_t align){
+    size_t modulo=(uintptr_t)ptr%align;
+    if(modulo!=0){
+        return ((char*)ptr)+align-modulo; // j'ajoute au ptr le nombre d'octet pour atteindre la prochaine valeur alignée
+    }
+    return ptr;
 }
 void arena_init(arena_t* arena,void* buffer,size_t length){
     arena->buffer=buffer;
