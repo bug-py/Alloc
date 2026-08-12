@@ -27,5 +27,5 @@ size_t calc_padding_with_header(void* ptr,size_t header_size,size_t align_header
     assert(align_size_foward(header_size,align_header)==header_size && "header_size not align");
     size_t align=header_size>align_header ?header_size:align_header;
     void* align_ptr=align_ptr_foward((char*)ptr+header_size,align);
-    return (uintptr_t)ptr -(uintptr_t)align_ptr;
+    return (uintptr_t)align_ptr -(uintptr_t)ptr;
 }
