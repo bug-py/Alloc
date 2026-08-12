@@ -27,6 +27,6 @@ typedef struct{
     block_header_t* head;
 }free_list_t;
 
-int free_list_init(free_list_t* free_list,char* buffer,size_t length,placement_policy_t polity);
+int free_list_init(free_list_t* free_list,void* buffer,size_t length,placement_policy_t polity);
 void free_list_free_all(free_list_t* free_list);
 #endif
