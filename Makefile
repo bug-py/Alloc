@@ -16,7 +16,7 @@ $(1) : $(BIN_DIR)/$(1).exe
 	$(BIN_DIR)/$(1).exe
 
 $(OBJ_DIR)/main_$(1).o : $(1)/main.c $(1)/$(1).h
-	$(CC) $(CFLAGS) -I$(1) $(ALIGN_DIR) -c $$< -o $$@
+	$(CC) $(CFLAGS) -I$(1) -c $$< -o $$@
 
 $(OBJ_DIR)/$(1).o : $(1)/$(1).c $(1)/$(1).h
 	$(CC) $(CFLAGS) -I$(1) -I$(ALIGN_DIR) -c $$< -o $$@
