@@ -23,13 +23,13 @@ static void insert_node(block_header_t** head_ptr,block_header_t* prev_node,bloc
     }
 
 }
-static block_header_t* find_first_node(block_header_t* head,size_t size_block,size_t align,size_t* padding_ptr,block_header_t** prev_node_ptr){
+static block_header_t* find_first_node(block_header_t* head,size_t size,size_t align,size_t* padding_ptr,block_header_t** prev_node_ptr){
     block_header_t* current=head;
     block_header_t* prev_node=NULL;
     size_t padding=0;
     while(current!=NULL){
         padding=calc_padding_with_header(current,sizeof(block_header_t),HEADER_ALIGNEMENT,align);
-        size_t require_space=size_block+(padding-sizeof(block_header_t));
+        size_t require_space=size+padding;
         if(current->block_size>=require_space){
             break;
         }
@@ -40,7 +40,7 @@ static block_header_t* find_first_node(block_header_t* head,size_t size_block,si
     if(prev_node_ptr) (*prev_node_ptr)=prev_node;
     return current;
 }
-static block_header_t* find_best_node(block_header_t* head,size_t size_block,size_t align,size_t* padding_ptr,block_header_t** prev_node_ptr){
+static block_header_t* find_best_node(block_header_t* head,size_t size,size_t align,size_t* padding_ptr,block_header_t** prev_node_ptr){
     block_header_t* best_node=NULL;
     block_header_t* prev_best_node=NULL;
     size_t padding_best_node=0;
@@ -51,7 +51,7 @@ static block_header_t* find_best_node(block_header_t* head,size_t size_block,siz
     size_t smallest_diff=~(size_t)0;
     while(current!=NULL){
         size_t padding=calc_padding_with_header(current,sizeof(block_header_t),HEADER_ALIGNEMENT,align);
-        size_t require_space=size_block+(padding-sizeof(block_header_t));
+        size_t require_space=size+padding;
         if(current->block_size>=require_space){
             size_t diff=current->block_size-require_space;
             if(diff<smallest_diff){
@@ -71,13 +71,50 @@ static block_header_t* find_best_node(block_header_t* head,size_t size_block,siz
 }
 
 int free_list_init(free_list_t* free_list,void* buffer,size_t length,placement_policy_t policy){
-    if(length<(HEADER_ALIGNEMENT-1)+sizeof(block_header_t)) return -1;
-    size_t diff_align=(uintptr_t)align_ptr_foward(buffer,HEADER_ALIGNEMENT)-(uintptr_t)buffer;
+    assert(length>(HEADER_ALIGNEMENT-1)+sizeof(block_header_t) && "no space");
+    assert(policy==Find_Best || policy==Find_First );
+    size_t diff_align=(uintptr_t)align_ptr_foward(buffer,HEADER_ALIGNEMENT)-(uintptr_t)buffer; 
     free_list->buffer=(char*)buffer+diff_align;
-    free_list->length_buff=length-diff_align;
+    free_list->length_buff=align_size_backward(length-diff_align,HEADER_ALIGNEMENT);
     free_list->policy=policy;
     free_list_free_all(free_list);
     return 0;
+}
+void* free_list_alloc_align(free_list_t* free_list,size_t size,size_t align){
+    size=align_size_foward(size,HEADER_ALIGNEMENT);
+    block_header_t* free_block;
+    block_header_t* prev_block;
+    size_t padding;
+    
+    if(free_list->policy==Find_First){
+        free_block=find_first_node(free_list->head,size,align,&padding,&prev_block);
+    }else if(free_list->policy==Find_Best){
+        free_block=find_best_node(free_list->head,size,align,&padding,&prev_block);
+    }
+    if(free_block==NULL) return NULL;
+
+    size_t size_block_alloc=size+padding;
+    size_t remaining=free_block->block_size-size_block_alloc;
+    if(remaining>sizeof(block_header_t)){
+        block_header_t* new_node=(block_header_t*)((char*)free_block+size_block_alloc);
+        new_node->block_size=remaining;
+        insert_node(&(free_list->head),free_block,new_node);
+    }else{
+        size_block_alloc+=remaining;
+    }
+    remove_node(&(free_list->head),prev_block,free_block);
+
+
+    size_t align_padding=padding-sizeof(block_header_t);
+    block_header_t* alloc_block=(block_header_t*)((char*)free_block+align_padding);
+    alloc_block->block_size=size_block_alloc;
+    alloc_block->alloc.padding=align_padding;
+    free_list->used+=size_block_alloc;
+
+    return (char*)alloc_block+sizeof(block_header_t);
+}
+inline void* free_list_alloc(free_list_t* free_list,size_t size){
+    return free_list_alloc_align(free_list,size,DEFAULT_ALIGNEMENT);
 }
 void free_list_free_all(free_list_t* free_list){
     block_header_t* first_block=(block_header_t*)free_list->buffer;

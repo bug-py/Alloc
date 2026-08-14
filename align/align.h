@@ -5,5 +5,6 @@
 #define DEFAULT_ALIGNEMENT sizeof(void*)*2
 void* align_ptr_foward(void* ptr,size_t align);
 size_t align_size_foward(size_t size,size_t align);
+size_t align_size_backward(size_t size,size_t align);
 size_t calc_padding_with_header(void* ptr,size_t header_size,size_t align_header,size_t align_data);
 #endif
