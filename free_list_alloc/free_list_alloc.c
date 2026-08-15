@@ -69,7 +69,21 @@ static block_header_t* find_best_node(block_header_t* head,size_t size,size_t al
     if(prev_node_ptr) (*prev_node_ptr)=prev_best_node;
     return best_node;
 }
-
+static block_header_t* free_list_coalescence(free_list_t* free_list,block_header_t* prev_block,block_header_t* free_block){
+    block_header_t* new_block=NULL;
+    block_header_t* next_block=free_block->free.next;
+    if(next_block!=NULL && (uintptr_t)free_block+free_block->block_size==(uintptr_t)next_block){
+        new_block=free_block;
+        free_block->block_size+=next_block->block_size;
+        remove_node(&(free_list->head),free_block,next_block);
+    }
+    if(prev_block !=NULL && (uintptr_t)prev_block+prev_block->block_size==(uintptr_t)free_block){
+        new_block=prev_block;
+        prev_block->block_size+=free_block->block_size;
+        remove_node(&(free_list->head),prev_block,free_block);
+    }
+    return new_block;
+}
 int free_list_init(free_list_t* free_list,void* buffer,size_t length,placement_policy_t policy){
     assert(length>(HEADER_ALIGNEMENT-1)+sizeof(block_header_t) && "no space");
     assert(policy==Find_Best || policy==Find_First );
@@ -136,7 +150,7 @@ void free_list_free(free_list_t* free_list,void* ptr){
     }
     insert_node(&(free_list->head),prev_node,free_block);
     free_list->used-=block_size;
-
+    free_list_coalescence(free_list,prev_node,free_block);
 }
 void free_list_free_all(free_list_t* free_list){
     block_header_t* first_block=(block_header_t*)free_list->buffer;

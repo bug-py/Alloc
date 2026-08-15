@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wextra -Wall 
+CFLAGS = -Wextra -Wall -g
 BIN_DIR=bin
 OBJ_DIR=obj
 METHOD_ALLOC =linear_alloc stack_alloc pool_alloc free_list_alloc

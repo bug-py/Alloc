@@ -21,6 +21,17 @@ int main(){
     number=free_list_alloc_align(&fl,sizeof(int),16);
     free_list_free(&fl,number);
     printf("number_ptr align 16 %p\n",number);
+    number=free_list_alloc_align(&fl,sizeof(int),16);
+    printf("number_ptr align 16 %p\n",number);
+    number=free_list_alloc_align(&fl,sizeof(int),16);
+    printf("number_ptr align 16 %p\n",number);
+    number=free_list_alloc_align(&fl,sizeof(int),16);
+    printf("number_ptr align 16 %p\n",number);
+    number=free_list_alloc_align(&fl,sizeof(int),16);
+    printf("number_ptr align 16 %p\n",number);
+    number=free_list_alloc_align(&fl,sizeof(int),16);
+    printf("number_ptr align 16 %p\n",number);
+    free_list_free(&fl,number);
     printf("used octet : %lu\n",fl.used);
     printf("PAS CRASH\n");
     return 0;   
