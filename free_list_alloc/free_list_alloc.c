@@ -116,6 +116,28 @@ void* free_list_alloc_align(free_list_t* free_list,size_t size,size_t align){
 inline void* free_list_alloc(free_list_t* free_list,size_t size){
     return free_list_alloc_align(free_list,size,DEFAULT_ALIGNEMENT);
 }
+void free_list_free(free_list_t* free_list,void* ptr){
+    assert((uintptr_t)ptr%HEADER_ALIGNEMENT==0 && "not ptr valid");
+    block_header_t* alloc_block=(block_header_t*)((char*)ptr-sizeof(block_header_t));
+    size_t block_size=alloc_block->block_size;
+    size_t padding=alloc_block->alloc.padding;
+
+    block_header_t* free_block=(block_header_t*)((char*)alloc_block-padding);
+    free_block->block_size=block_size;
+    free_block->free.next=NULL;
+    block_header_t* current=free_list->head;
+    block_header_t* prev_node=NULL;
+    while(current!=NULL){
+        if(current>free_block){
+            break;
+        }
+        prev_node=current;
+        current=current->free.next;
+    }
+    insert_node(&(free_list->head),prev_node,free_block);
+    free_list->used-=block_size;
+
+}
 void free_list_free_all(free_list_t* free_list){
     block_header_t* first_block=(block_header_t*)free_list->buffer;
     first_block->block_size=free_list->length_buff;
