@@ -85,7 +85,7 @@ static block_header_t* free_list_coalescence(free_list_t* free_list,block_header
     return new_block;
 }
 int free_list_init(free_list_t* free_list,void* buffer,size_t length,placement_policy_t policy){
-    assert(length>(HEADER_ALIGNEMENT-1)+sizeof(block_header_t) && "no space");
+    assert(length>(HEADER_ALIGNEMENT-1)*2+sizeof(block_header_t) && "no space");
     assert(policy==Find_Best || policy==Find_First );
     size_t diff_align=(uintptr_t)align_ptr_foward(buffer,HEADER_ALIGNEMENT)-(uintptr_t)buffer; 
     free_list->buffer=(char*)buffer+diff_align;

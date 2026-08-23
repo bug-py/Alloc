@@ -14,6 +14,7 @@ typedef struct{
     size_t prev_alloc_offset;
 }header_t;
 void stack_init(stack_t* stack,void* buffer,size_t length);
+void* stack_alloc_align(stack_t* stack,size_t size,size_t align);
 void* stack_alloc(stack_t* stack,size_t size);
 void* stack_resize(stack_t* stack,void* old_ptr,size_t new_size);
 int stack_free(stack_t* stack,void* old_ptr);

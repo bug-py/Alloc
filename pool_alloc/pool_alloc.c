@@ -1,36 +1,29 @@
 #include "pool_alloc.h"
-
-#define DEFAULT_ALIGNEMENT 2*sizeof(void*) 
-static size_t align_size_foward(size_t size,size_t align){
-    size_t modulo=size%align;
-    if(modulo!=0){
-        return size+align-modulo;
-    }
-    return size; 
+#include "align.h"
+#define HEADER_ALIGNEMENT 8
+static size_t calc_chunk_size(size_t element_size,size_t align){
+    return align_size_foward(element_size+sizeof(pool_header_t),align);
 }
-static void* align_ptr_foward(void* ptr,size_t align){
-    size_t modulo=(uintptr_t)ptr%align;
-    if(modulo!=0){
-        return ((char*)ptr)+align-modulo; 
-    }
-    return ptr;
+size_t calc_len_for_elem_align(size_t element_size,size_t chunks,size_t align){
+    return align-1+chunks*calc_chunk_size(element_size,align);
 }
-static size_t calc_chunk_size(size_t element_size){
-    return align_size_foward(element_size+sizeof(pool_header_t),DEFAULT_ALIGNEMENT);
+inline size_t calc_len_for_elem(size_t element_size,size_t chunks){
+    return calc_len_for_elem_align(element_size,chunks,DEFAULT_ALIGNEMENT);
 }
-size_t calc_len_for_elem(size_t element_size,size_t chunks){
-    return DEFAULT_ALIGNEMENT-1+chunks*calc_chunk_size(element_size);
-}
-
-size_t pool_init(pool_t* pool,void* buffer,size_t length,size_t element_size){
-    if(calc_len_for_elem(element_size,1)>length) return 0;
-    void* align_ptr=align_ptr_foward(buffer,DEFAULT_ALIGNEMENT);
+size_t pool_init_align(pool_t* pool,void* buffer,size_t length,size_t element_size,size_t align){
+    if(HEADER_ALIGNEMENT>align) align=HEADER_ALIGNEMENT;
+    if(calc_len_for_elem_align(element_size,1,align)>length) return 0;
+    void* align_ptr=align_ptr_foward(buffer,align);
+    length-=(uintptr_t)align_ptr-(uintptr_t)buffer;
     pool->buffer=align_ptr;
-    pool->length_buff=length-((uintptr_t)align_ptr-(uintptr_t)buffer);
-    pool->chunk_size=calc_chunk_size(element_size);
+    pool->chunk_size=calc_chunk_size(element_size,align);
+    pool->chunk_count=length/pool->chunk_size;
     pool->head=NULL;
     pool_free_all(pool);
-    return length/pool->chunk_size;
+    return pool->chunk_count;
+}
+inline size_t pool_init(pool_t* pool,void* buffer,size_t length,size_t element_size){
+    return pool_init_align(pool,buffer,length,element_size,DEFAULT_ALIGNEMENT);
 }
 void* pool_alloc(pool_t* pool){
     if(pool->head==NULL) return NULL;
@@ -45,11 +38,10 @@ void pool_free(pool_t* pool,void* ptr){
     pool->head=current_chunk;
 }
 void pool_free_all(pool_t* pool){
-    size_t chunks=pool->length_buff/pool->chunk_size;
     pool->head=(pool_header_t*)pool->buffer;
     pool_header_t* prev=NULL;
     pool_header_t* current=pool->head;
-    for(size_t i=1;i<chunks;i++){
+    for(size_t i=1;i<pool->chunk_count;i++){
        prev=current;
        current=(pool_header_t*)((char*)current+pool->chunk_size);
        prev->next=current;
