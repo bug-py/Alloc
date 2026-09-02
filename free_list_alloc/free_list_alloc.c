@@ -1,6 +1,7 @@
 #include "free_list_alloc.h"
 #include "align.h"
 #include <assert.h>
+#define HEADER_ALIGNEMENT alignof(block_header_t)
 static void remove_node(block_header_t** head_ptr,block_header_t* prev_node,block_header_t* del_node){
     assert(del_node!=NULL);
     if(prev_node==NULL){

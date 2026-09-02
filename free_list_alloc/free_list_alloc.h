@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdalign.h>
-#define HEADER_ALIGNEMENT alignof(block_header_t)
 typedef struct block_header block_header_t;
 struct block_header {
     size_t block_size;
