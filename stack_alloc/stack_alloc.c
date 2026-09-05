@@ -1,6 +1,10 @@
 #include "stack_alloc.h"
 #include "align.h"
-#define HEADER_ALIGNEMENT 8
+typedef struct{
+    size_t padding;
+    size_t prev_alloc_offset;
+}header_t;
+#define HEADER_ALIGNEMENT alignof(header_t)
 void stack_init(stack_t* stack,void* buffer,size_t length){
     stack->buffer=buffer;
     stack->length=length;
@@ -8,9 +12,9 @@ void stack_init(stack_t* stack,void* buffer,size_t length){
     stack->last_alloc_offset=0;
 }
 void* stack_alloc_align(stack_t* stack,size_t size,size_t align){
-    if (align>256) align=256;
+    if (HEADER_ALIGNEMENT>align) align=HEADER_ALIGNEMENT;
     void* ptr=stack->buffer+stack->current_offset;
-    size_t padding=calc_padding_with_header(ptr,sizeof(header_t),align,HEADER_ALIGNEMENT);
+    size_t padding=calc_padding_with_header(ptr,sizeof(header_t),align);
     size_t alloc_offset=stack->current_offset+padding;
     size_t new_offset=alloc_offset+size;
     if(new_offset>stack->length) return NULL;

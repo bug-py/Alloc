@@ -29,7 +29,7 @@ static block_header_t* find_first_node(block_header_t* head,size_t size,size_t a
     block_header_t* prev_node=NULL;
     size_t padding=0;
     while(current!=NULL){
-        padding=calc_padding_with_header(current,sizeof(block_header_t),HEADER_ALIGNEMENT,align);
+        padding=calc_padding_with_header(current,sizeof(block_header_t),align);
         size_t require_space=size+padding;
         if(current->block_size>=require_space){
             break;
@@ -51,7 +51,7 @@ static block_header_t* find_best_node(block_header_t* head,size_t size,size_t al
     
     size_t smallest_diff=~(size_t)0;
     while(current!=NULL){
-        size_t padding=calc_padding_with_header(current,sizeof(block_header_t),HEADER_ALIGNEMENT,align);
+        size_t padding=calc_padding_with_header(current,sizeof(block_header_t),align);
         size_t require_space=size+padding;
         if(current->block_size>=require_space){
             size_t diff=current->block_size-require_space;
@@ -96,6 +96,7 @@ int free_list_init(free_list_t* free_list,void* buffer,size_t length,placement_p
     return 0;
 }
 void* free_list_alloc_align(free_list_t* free_list,size_t size,size_t align){
+    if(HEADER_ALIGNEMENT>align) align=HEADER_ALIGNEMENT;
     size=align_size_foward(size,HEADER_ALIGNEMENT);
     block_header_t* free_block;
     block_header_t* prev_block;

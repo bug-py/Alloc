@@ -9,10 +9,7 @@ typedef struct{
     size_t last_alloc_offset;
 }stack_t;
 
-typedef struct{
-    uint8_t padding;
-    size_t prev_alloc_offset;
-}header_t;
+
 void stack_init(stack_t* stack,void* buffer,size_t length);
 void* stack_alloc_align(stack_t* stack,size_t size,size_t align);
 void* stack_alloc(stack_t* stack,size_t size);

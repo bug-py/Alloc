@@ -45,12 +45,18 @@ size_t align_size_backward(size_t size,size_t align){
     }
     return size;
 }
-//aligne la mémoire du user sur l'alignement la plus grande entre header_size et align_header
-// |padding||header| => adresse de fin aligné sur align_header et align_data
-// utilisation de la propriété des puissance de 2 
-size_t calc_padding_with_header(void* ptr,size_t header_size,size_t align_header,size_t align_data){
-    assert(align_size_foward(header_size,align_header)==header_size && "header_size not align");
-    size_t align=(align_header>align_data) ?align_header:align_data;
+// RETOURNE (HEADER+PADDING)
+// | PADDING | | HEADER | | DATA | adresse de DATA alignée sur align 
+// adresse de HEADER alignée sur ALIGN si la taille du header est multiple de ALIGN 
+// (alignement garantit pour les struct automatique par la compilateur)
+// EXEMPLE :
+//      HEADER : 16 octets 
+//      On veut garantir un alignememnt de 16 octets pour HEADER
+//      On veut garantir un alignememnt de 16 octets pour DATA
+//      0x01 => |PADDING (15 octets)| |HEADER (16 octets)| |DATA |
+//      HEADER => 0x10 "16" aligné sur 16 octets 
+//      DATA => 0x20 "32" aligné sur 16 octets
+size_t calc_padding_with_header(void* ptr,size_t header_size,size_t align){
     void* align_ptr=align_ptr_foward((char*)ptr+header_size,align);
     return (uintptr_t)align_ptr -(uintptr_t)ptr;
 }
