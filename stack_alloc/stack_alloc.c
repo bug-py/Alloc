@@ -1,9 +1,5 @@
 #include "stack_alloc.h"
 #include "align.h"
-typedef struct{
-    size_t padding;
-    size_t prev_alloc_offset;
-}header_t;
 #define HEADER_ALIGNEMENT alignof(header_t)
 void stack_init(stack_t* stack,void* buffer,size_t length){
     stack->buffer=buffer;

@@ -3,6 +3,11 @@
 #include <stddef.h>
 #include <stdint.h>
 typedef struct{
+    size_t padding;
+    size_t prev_alloc_offset;
+}header_t;
+
+typedef struct{
     char* buffer;
     size_t length;
     size_t current_offset;
