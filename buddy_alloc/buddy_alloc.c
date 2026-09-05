@@ -1,4 +1,5 @@
 #include "buddy_alloc.h"
+#include "align.h"
 #include <assert.h>
 #define HEADER_ALIGNEMENT 8
 
@@ -28,8 +29,14 @@ static buddy_block_t* find_best_buddy_block(buddy_alloc_t* buddy_alloc,size_t si
         return best_block ? buddy_block_split(best_block,size) : NULL;
 }
 void buddy_alloc_init(buddy_alloc_t* buddy_alloc,void* buffer,size_t size,size_t align){
-
-    align = HEADER_ALIGNEMENT>align ? HEADER_ALIGNEMENT : align;
+    if(align==0) align=DEFAULT_ALIGNEMENT;
+    
+    assert(size>sizeof(buddy_block_t)+(align-1)|| "NO ENOUGH SPACE");
+    size_t padding_align=calc_padding_with_header(buffer,sizeof(buddy_block_t),HEADER_ALIGNEMENT,align)-sizeof(buddy_block_t);
+    buddy_alloc->head=(buddy_block_t*)((char*)buffer+padding_align);
+    buddy_alloc->tail=(buddy_block_t*)((char*)buddy_alloc->head+(size-padding_align));
+    buddy_alloc->align=(HEADER_ALIGNEMENT>align ? HEADER_ALIGNEMENT : align);
+    buddy_alloc_free_all(buddy_alloc);
     
 }
 void buddy_alloc_free_all(buddy_alloc_t* buddy_alloc){
