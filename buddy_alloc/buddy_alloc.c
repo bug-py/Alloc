@@ -89,8 +89,9 @@ void* buddy_allocator_alloc(buddy_alloc_t* buddy_alloc,size_t size){
     return (char*)block+sizeof(buddy_block_t);
 }
 void buddy_allocator_free(buddy_alloc_t* buddy_alloc,void* ptr){
-    buddy_block_t* block=(buddy_block_t*)(char*)ptr-sizeof(buddy_block_t);
+    buddy_block_t* block=(buddy_block_t*)ptr-1;
     block->is_free=true;
+    printf("OKAY\n");
 }
 void buddy_allocator_free_all(buddy_alloc_t* buddy_alloc){
     buddy_alloc->head->is_free=true;
